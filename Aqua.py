@@ -2,6 +2,8 @@ import time
 import logging
 from AquaUtil import AquaUtil
 from Database import Database
+import webhook_listener
+import json
 import RPi.GPIO as GPIO
 
 
@@ -14,6 +16,8 @@ logging.basicConfig(
     ]
 )
 
+# Web
+port = 8080
 # Time parameters
 lighting_enabled = True
 lighting_start_hours = 9
@@ -44,6 +48,24 @@ feeding_second_state = False
 connect = Database()
 utils = AquaUtil()
 
+
+def parse_request(request, *args, **kwargs):
+    logging.debug(
+        "Received request:\n"
+        + "Method: {}\n".format(request.method)
+        + "Headers: {}\n".format(request.headers)
+        + "Args (url path): {}\n".format(args)
+        + "Keyword Args (url parameters): {}\n".format(kwargs)
+        + "Body: {}".format(
+            request.body.read(int(request.headers["Content-Length"]))
+            if int(request.headers.get("Content-Length", 0)) > 0
+            else ""
+        )
+    )
+    return
+
+webhooks = webhook_listener.Listener(port=port, handlers={"POST": parse_request})
+webhooks.start()
 
 def resetAllParameters():
     global connect
@@ -122,6 +144,8 @@ while True:
                 count_from_database = connect.select_from_db()
                 if count_from_database == feeding_number_of:
                     food = True
+                    if debug:
+                        logging.info("Feeding on this day is complete.")
                 elif count_from_database == 1 and feeding_number_of > 1:
                     feeding_first_state = True
         elif backup_feeding:
