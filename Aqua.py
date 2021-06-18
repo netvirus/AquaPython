@@ -1,8 +1,18 @@
 import time
-
+import logging
 from AquaUtil import AquaUtil
 from Database import Database
 import RPi.GPIO as GPIO
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("aqua.log"),
+        logging.StreamHandler()
+    ]
+)
 
 # Time parameters
 lighting_enabled = True
@@ -18,6 +28,8 @@ oxygen_gpio = 27
 feeding_enabled = True
 feeding_start_hours = 9
 feeding_stop_hours = 22
+feeding_first_hour = 0
+feeding_second_hour = 0
 feeding_number_of = 2
 feeding_gpio = 22
 # Flags
@@ -65,42 +77,42 @@ while True:
         # Disable lighting
         if light and not lighting_timer:
             if debug:
-                print("Lighting - Disabled")
+                logging.info("Lighting - Disabled")
             GPIO.output(lighting_gpio, GPIO.LOW)
             GPIO.setup(lighting_gpio, GPIO.IN)
             light = False
         # Enable lighting
         elif not light and lighting_timer:
             if debug:
-                print("Lighting - Enabled")
+                logging.info("Lighting - Enabled")
             GPIO.setup(lighting_gpio, GPIO.OUT)
             GPIO.output(lighting_gpio, GPIO.HIGH)
             light = True
     else:
-        print("Lighting is disabled in config")
+        logging.info("Lighting is disabled in config")
     if oxygen_enabled:
         oxygen_timer = utils.checkTime(oxygen_start_hours, oxygen_stop_hours, oxygen_start_minutes)
         # Disable oxygen
         if oxygen and not oxygen_timer:
             if debug:
-                print("Oxygen - Disabled")
+                logging.info("Oxygen - Disabled")
             GPIO.output(oxygen_gpio, GPIO.LOW)
             GPIO.setup(oxygen_gpio, GPIO.IN)
             oxygen = False
         # Enable oxygen
         elif not oxygen and oxygen_timer:
             if debug:
-                print("Oxygen - Enabled")
+                logging.info("Oxygen - Enabled")
             GPIO.setup(oxygen_gpio, GPIO.OUT)
             GPIO.output(oxygen_gpio, GPIO.HIGH)
             oxygen = True
     else:
-        print("Oxygen is disabled in config")
+        logging.info("Oxygen is disabled in config")
     if feeding_enabled:
         if not food:
             if not feeding_first_state and utils.checkHour(feeding_first_hour) or not feeding_second_state and utils.checkHour(feeding_second_hour):
                 if debug:
-                    print("Feeding...")
+                    logging.info("Feeding...")
                 GPIO.setup(feeding_gpio, GPIO.OUT)
                 GPIO.output(feeding_gpio, GPIO.HIGH)
                 time.sleep(2)
@@ -114,7 +126,7 @@ while True:
                     feeding_first_state = True
         elif backup_feeding:
             if debug:
-                print("Backup Feeding...")
+                logging.info("Backup Feeding...")
             GPIO.setup(feeding_gpio, GPIO.OUT)
             GPIO.output(feeding_gpio, GPIO.HIGH)
             time.sleep(2)
@@ -126,4 +138,4 @@ while True:
             if count_from_database == 0:
                 utils.resetAllParameters()
     else:
-        print("Feeding is disabled in config")
+        logging.info("Feeding is disabled in config")
