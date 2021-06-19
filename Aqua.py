@@ -3,9 +3,7 @@ import logging
 from AquaUtil import AquaUtil
 from Database import Database
 import webhook_listener
-import json
 import RPi.GPIO as GPIO
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,6 +36,8 @@ feeding_number_of = 2
 feeding_gpio = 22
 # Flags
 debug = True
+webhooks = False
+gpio_support = False
 food = False
 light = False
 oxygen = False
@@ -62,10 +62,14 @@ def parse_request(request, *args, **kwargs):
             else ""
         )
     )
+    request.method()
     return
 
-webhooks = webhook_listener.Listener(port=port, handlers={"POST": parse_request})
-webhooks.start()
+
+if webhooks:
+    webhooks = webhook_listener.Listener(port=port, handlers={"POST": parse_request})
+    webhooks.start()
+
 
 def resetAllParameters():
     global connect
@@ -90,8 +94,11 @@ def resetAllParameters():
         elif count == 2:
             food = True
 
+if gpio_support:
+    GPIO.cleanup()
+    GPIO.setmode(GPIO.BCM)
 
-GPIO.setmode(GPIO.BCM)
+logging.info("= Starting Aqua Control Center =")
 resetAllParameters()
 while True:
     if lighting_enabled:
@@ -100,15 +107,17 @@ while True:
         if light and not lighting_timer:
             if debug:
                 logging.info("Lighting - Disabled")
-            GPIO.output(lighting_gpio, GPIO.LOW)
-            GPIO.setup(lighting_gpio, GPIO.IN)
+            if gpio_support:
+                GPIO.output(lighting_gpio, GPIO.LOW)
+                GPIO.setup(lighting_gpio, GPIO.IN)
             light = False
         # Enable lighting
         elif not light and lighting_timer:
             if debug:
                 logging.info("Lighting - Enabled")
-            GPIO.setup(lighting_gpio, GPIO.OUT)
-            GPIO.output(lighting_gpio, GPIO.HIGH)
+            if gpio_support:
+                GPIO.setup(lighting_gpio, GPIO.OUT)
+                GPIO.output(lighting_gpio, GPIO.HIGH)
             light = True
     else:
         logging.info("Lighting is disabled in config")
@@ -118,28 +127,32 @@ while True:
         if oxygen and not oxygen_timer:
             if debug:
                 logging.info("Oxygen - Disabled")
-            GPIO.output(oxygen_gpio, GPIO.LOW)
-            GPIO.setup(oxygen_gpio, GPIO.IN)
+            if gpio_support:
+                GPIO.output(oxygen_gpio, GPIO.LOW)
+                GPIO.setup(oxygen_gpio, GPIO.IN)
             oxygen = False
         # Enable oxygen
         elif not oxygen and oxygen_timer:
             if debug:
                 logging.info("Oxygen - Enabled")
-            GPIO.setup(oxygen_gpio, GPIO.OUT)
-            GPIO.output(oxygen_gpio, GPIO.HIGH)
+            if gpio_support:
+                GPIO.setup(oxygen_gpio, GPIO.OUT)
+                GPIO.output(oxygen_gpio, GPIO.HIGH)
             oxygen = True
     else:
         logging.info("Oxygen is disabled in config")
     if feeding_enabled:
         if not food:
-            if not feeding_first_state and utils.checkHour(feeding_first_hour) or not feeding_second_state and utils.checkHour(feeding_second_hour):
+            if not feeding_first_state and utils.checkHour(
+                    feeding_first_hour) or not feeding_second_state and utils.checkHour(feeding_second_hour):
                 if debug:
                     logging.info("Feeding...")
-                GPIO.setup(feeding_gpio, GPIO.OUT)
-                GPIO.output(feeding_gpio, GPIO.HIGH)
-                time.sleep(2)
-                GPIO.output(feeding_gpio, GPIO.LOW)
-                GPIO.setup(feeding_gpio, GPIO.IN)
+                if gpio_support:
+                    GPIO.setup(feeding_gpio, GPIO.OUT)
+                    GPIO.output(feeding_gpio, GPIO.HIGH)
+                    time.sleep(2)
+                    GPIO.output(feeding_gpio, GPIO.LOW)
+                    GPIO.setup(feeding_gpio, GPIO.IN)
                 connect.save_to_db()
                 count_from_database = connect.select_from_db()
                 if count_from_database == feeding_number_of:
@@ -151,11 +164,12 @@ while True:
         elif backup_feeding:
             if debug:
                 logging.info("Backup Feeding...")
-            GPIO.setup(feeding_gpio, GPIO.OUT)
-            GPIO.output(feeding_gpio, GPIO.HIGH)
-            time.sleep(2)
-            GPIO.output(feeding_gpio, GPIO.LOW)
-            GPIO.setup(feeding_gpio, GPIO.IN)
+            if gpio_support:
+                GPIO.setup(feeding_gpio, GPIO.OUT)
+                GPIO.output(feeding_gpio, GPIO.HIGH)
+                time.sleep(2)
+                GPIO.output(feeding_gpio, GPIO.LOW)
+                GPIO.setup(feeding_gpio, GPIO.IN)
             connect.save_to_db()
             backup_feeding = False
         if utils.checkHour(feeding_start_hours) and food:
