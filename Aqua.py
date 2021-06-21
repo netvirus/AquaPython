@@ -2,8 +2,8 @@ import time
 import logging
 from AquaUtil import AquaUtil
 from Database import Database
-import webhook_listener
-import RPi.GPIO as GPIO
+#import webhook_listener
+#import RPi.GPIO as GPIO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -75,8 +75,11 @@ def resetAllParameters():
     global connect
     global food
     global feeding_first_hour
+    global feeding_start_hours
+    global feeding_stop_hours
     global feeding_second_hour
     global feeding_first_state
+    global feeding_number_of
     count = connect.select_from_db()
     if utils.checkTimeForFeeding(feeding_start_hours, feeding_stop_hours):
         feeding_first_hour = feeding_start_hours + 1

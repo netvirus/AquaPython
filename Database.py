@@ -39,9 +39,10 @@ class Database(object):
     ## End def save_to_db
 
     def select_from_db(self):
-        sql = "SELECT COUNT(*) AS total FROM feeding WHERE DATE(time) = CURRENT_DATE"
+        sql = "SELECT * FROM feeding WHERE DATE(time) = CURRENT_DATE"
         self.__open()
-        results = self.__cursor.execute(sql)
+        self.__cursor.execute(sql)
+        results = self.__cursor.rowcount
         self.__close()
         return results
     ## End def select_from_db

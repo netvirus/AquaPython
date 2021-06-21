@@ -1,3 +1,4 @@
+import math
 import time
 
 
@@ -19,4 +20,4 @@ class AquaUtil(object):
         return False
 
     def getSecondHours(self, startH, stopH):
-        return startH + ((stopH - startH) / 2) + 1
+        return math.floor(startH + ((stopH - startH) / 2) + 1)
