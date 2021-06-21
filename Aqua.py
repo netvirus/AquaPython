@@ -2,8 +2,7 @@ import time
 import logging
 from AquaUtil import AquaUtil
 from Database import Database
-#import webhook_listener
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -14,8 +13,7 @@ logging.basicConfig(
     ]
 )
 
-# Web
-port = 8080
+
 # Time parameters
 lighting_enabled = True
 lighting_start_hours = 9
@@ -47,28 +45,6 @@ feeding_second_state = False
 # Get BD connection
 connect = Database()
 utils = AquaUtil()
-
-
-def parse_request(request, *args, **kwargs):
-    logging.debug(
-        "Received request:\n"
-        + "Method: {}\n".format(request.method)
-        + "Headers: {}\n".format(request.headers)
-        + "Args (url path): {}\n".format(args)
-        + "Keyword Args (url parameters): {}\n".format(kwargs)
-        + "Body: {}".format(
-            request.body.read(int(request.headers["Content-Length"]))
-            if int(request.headers.get("Content-Length", 0)) > 0
-            else ""
-        )
-    )
-    request.method()
-    return
-
-
-if webhooks:
-    webhooks = webhook_listener.Listener(port=port, handlers={"POST": parse_request})
-    webhooks.start()
 
 
 def resetAllParameters():
