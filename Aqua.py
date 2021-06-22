@@ -2,9 +2,8 @@ import time
 import logging
 from AquaUtil import AquaUtil
 from Database import Database
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
-from Feeding import Feeding
 
 logging.basicConfig(
     level=logging.INFO,
