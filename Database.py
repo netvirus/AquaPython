@@ -35,6 +35,7 @@ class Database(object):
         sql = "INSERT INTO feeding (time) VALUES (CURRENT_TIMESTAMP())"
         self.__open()
         self.__cursor.execute(sql)
+        self.__connection.commit()
         self.__close()
     ## End def save_to_db
 

@@ -2,7 +2,9 @@ import time
 import logging
 from AquaUtil import AquaUtil
 from Database import Database
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
+
+from Feeding import Feeding
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,6 +17,7 @@ logging.basicConfig(
 
 
 # Time parameters
+_reset_time = 00
 lighting_enabled = True
 lighting_start_hours = 9
 lighting_stop_hours = 18
@@ -26,59 +29,71 @@ oxygen_stop_hours = 22
 oxygen_start_minutes = 0
 oxygen_gpio = 27
 feeding_enabled = True
-feeding_start_hours = 9
-feeding_stop_hours = 22
-feeding_first_hour = 0
-feeding_second_hour = 0
-feeding_number_of = 2
+_feeding_start_hours = 12
+_feeding_stop_hours = 22
+_feeding_second_hour = 0
+_feeding_number_of = 2
 feeding_gpio = 22
 # Flags
 debug = True
-webhooks = False
 gpio_support = False
 food = False
 light = False
 oxygen = False
-backup_feeding = False
 feeding_first_state = False
-feeding_second_state = False
 # Get BD connection
 connect = Database()
 utils = AquaUtil()
 
 
-def resetAllParameters():
+def reset_all_parameters():
     global connect
     global food
-    global feeding_first_hour
-    global feeding_start_hours
-    global feeding_stop_hours
-    global feeding_second_hour
+    global _feeding_start_hours
+    global _feeding_stop_hours
+    global _feeding_second_hour
     global feeding_first_state
-    global feeding_number_of
+    global _feeding_number_of
+    print("Configuring all parameters...")
     count = connect.select_from_db()
-    if utils.checkTimeForFeeding(feeding_start_hours, feeding_stop_hours):
-        feeding_first_hour = feeding_start_hours + 1
-        if count == 0:
-            if feeding_number_of == 1:
-                feeding_second_hour = feeding_stop_hours
-            elif feeding_number_of == 2:
-                feeding_second_hour = utils.getSecondHours(feeding_start_hours, feeding_stop_hours)
-        elif count == 1:
-            if feeding_number_of == 1:
-                food = True
-            elif feeding_number_of == 2:
-                feeding_second_hour = utils.getSecondHours(feeding_start_hours, feeding_stop_hours)
-                feeding_first_state = True
-        elif count == 2:
+    # Если не кормили еще не разу
+    if count == 0:
+        # Если должны кормить всего 1 раз
+        if _feeding_number_of == 2:
+            _feeding_second_hour = utils.getSecondHours(_feeding_start_hours, _feeding_stop_hours)
+    elif count == 1:
+        if _feeding_number_of == 1:
+            # Откормили на сегодня
             food = True
+        elif _feeding_number_of == 2:
+            _feeding_second_hour = utils.getSecondHours(_feeding_start_hours, _feeding_stop_hours)
+            # Покормили только один раз и надо еще один
+            feeding_first_state = True
+    elif count == 2:
+        # Откормили на сегодня
+        food = True
+    # End of reset_all_parameters()
+
+def start_feeding():
+    if gpio_support:
+        GPIO.setup(feeding_gpio, GPIO.OUT)
+        GPIO.output(feeding_gpio, GPIO.HIGH)
+        time.sleep(5)
+        GPIO.output(feeding_gpio, GPIO.LOW)
+        GPIO.setup(feeding_gpio, GPIO.IN)
+    connect.save_to_db()
+    print("Feeding...")
+    # End of start_feeding()
+
 
 if gpio_support:
     GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
 
 logging.info("= Starting Aqua Control Center =")
-resetAllParameters()
+reset_all_parameters()
+
+
 while True:
     if lighting_enabled:
         lighting_timer = utils.checkTime(lighting_start_hours, lighting_stop_hours, lighting_start_minutes)
@@ -122,37 +137,17 @@ while True:
         logging.info("Oxygen is disabled in config")
     if feeding_enabled:
         if not food:
-            if not feeding_first_state and utils.checkHour(
-                    feeding_first_hour) or not feeding_second_state and utils.checkHour(feeding_second_hour):
-                if debug:
-                    logging.info("Feeding...")
-                if gpio_support:
-                    GPIO.setup(feeding_gpio, GPIO.OUT)
-                    GPIO.output(feeding_gpio, GPIO.HIGH)
-                    time.sleep(2)
-                    GPIO.output(feeding_gpio, GPIO.LOW)
-                    GPIO.setup(feeding_gpio, GPIO.IN)
-                connect.save_to_db()
-                count_from_database = connect.select_from_db()
-                if count_from_database == feeding_number_of:
-                    food = True
-                    if debug:
-                        logging.info("Feeding on this day is complete.")
-                elif count_from_database == 1 and feeding_number_of > 1:
+            if utils.checkTimeForFeeding(_feeding_start_hours, _feeding_stop_hours):
+                if utils.checkHour(_feeding_start_hours) and not feeding_first_state:
+                    start_feeding()
+                    # Выставляем флаг откормлено 1 раз
                     feeding_first_state = True
-        elif backup_feeding:
-            if debug:
-                logging.info("Backup Feeding...")
-            if gpio_support:
-                GPIO.setup(feeding_gpio, GPIO.OUT)
-                GPIO.output(feeding_gpio, GPIO.HIGH)
-                time.sleep(2)
-                GPIO.output(feeding_gpio, GPIO.LOW)
-                GPIO.setup(feeding_gpio, GPIO.IN)
-            connect.save_to_db()
-            backup_feeding = False
-        if utils.checkHour(feeding_start_hours) and food:
-            if count_from_database == 0:
-                utils.resetAllParameters()
+                elif utils.checkHour(_feeding_second_hour):
+                    start_feeding()
+                    # Выставляем флаг откормлено на сегодня
+                    feed = True
+        else:
+            if utils.checkHour(_reset_time):
+                reset_all_parameters()
     else:
         logging.info("Feeding is disabled in config")
