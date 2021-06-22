@@ -54,7 +54,7 @@ def reset_all_parameters():
     global feeding_first_state
     global _feeding_number_of
     if debug:
-        print("Configuring all parameters...")
+        logging.info("Configuring all parameters...")
     count = connect.select_from_db()
     # Если не кормили еще не разу
     if count == 0:
@@ -76,14 +76,14 @@ def reset_all_parameters():
 
 def start_feeding():
     if gpio_support:
+        if debug:
+            logging.info("Starting feeding...")
         GPIO.setup(feeding_gpio, GPIO.OUT)
         GPIO.output(feeding_gpio, GPIO.HIGH)
         time.sleep(5)
         GPIO.output(feeding_gpio, GPIO.LOW)
         GPIO.setup(feeding_gpio, GPIO.IN)
     connect.save_to_db()
-    if debug:
-        print("Feeding...")
     # End of start_feeding()
 
 
