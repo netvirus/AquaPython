@@ -35,7 +35,7 @@ _feeding_number_of = 2
 feeding_gpio = 22
 # Flags
 debug = True
-gpio_support = False
+gpio_support = True
 food = False
 light = False
 oxygen = False
@@ -74,10 +74,10 @@ def reset_all_parameters():
         food = True
     # End of reset_all_parameters()
 
-def start_feeding():
+def start_feeding(count):
     if gpio_support:
         if debug:
-            logging.info("Starting feeding...")
+            logging.info("Starting feeding #" + count)
         GPIO.setup(feeding_gpio, GPIO.OUT)
         GPIO.output(feeding_gpio, GPIO.HIGH)
         time.sleep(5)
@@ -140,11 +140,11 @@ while True:
         if not food:
             if utils.checkTimeForFeeding(_feeding_start_hours, _feeding_stop_hours):
                 if utils.checkHour(_feeding_start_hours) and not feeding_first_state:
-                    start_feeding()
+                    start_feeding(1)
                     # Выставляем флаг откормлено 1 раз
                     feeding_first_state = True
                 elif utils.checkHour(_feeding_second_hour):
-                    start_feeding()
+                    start_feeding(2)
                     # Выставляем флаг откормлено на сегодня
                     feed = True
         else:
