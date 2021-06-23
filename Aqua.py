@@ -2,7 +2,9 @@ import time
 import logging
 from AquaUtil import AquaUtil
 from Database import Database
+from StepperMotor import StepperMotor
 import RPi.GPIO as GPIO
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +33,13 @@ _feeding_stop_hours = 22
 _feeding_second_hour = 0
 _feeding_number_of = 2
 feeding_gpio = 22
+# Stepper Motor
+in1_gpio = 10
+in2_gpio = 9
+in3_gpio = 11
+in4_gpio = 8
+stepper_delay = 0.005
+steps = 1024
 # Flags
 debug = True
 gpio_support = True
@@ -41,10 +50,11 @@ feeding_first_state = False
 # Get BD connection
 connect = Database()
 utils = AquaUtil()
+motor = StepperMotor(in1_gpio, in2_gpio, in3_gpio, in4_gpio, stepper_delay)
 
 if gpio_support:
-    GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
+    GPIO.cleanup()
 
 
 def reset_all_parameters():
@@ -81,11 +91,7 @@ def start_feeding(count):
     if gpio_support:
         if debug:
             logging.info("Starting feeding #" + str(count))
-        GPIO.setup(feeding_gpio, GPIO.OUT)
-        GPIO.output(feeding_gpio, GPIO.HIGH)
-        time.sleep(5)
-        GPIO.output(feeding_gpio, GPIO.LOW)
-        GPIO.setup(feeding_gpio, GPIO.IN)
+        motor.start(steps)
     connect.save_to_db()
     # End of start_feeding()
 
@@ -93,9 +99,9 @@ def start_feeding(count):
 def change_state_gpio(_gpio_number, state):
     if state:
         GPIO.setup(_gpio_number, GPIO.OUT)
-        GPIO.output(_gpio_number, GPIO.HIGH)
+        GPIO.output(_gpio_number, state)
     elif not state:
-        GPIO.output(_gpio_number, GPIO.LOW)
+        GPIO.output(_gpio_number, state)
         GPIO.setup(_gpio_number, GPIO.IN)
     # End of change_state_gpio()
 
