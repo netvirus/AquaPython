@@ -4,7 +4,6 @@ from AquaUtil import AquaUtil
 from Database import Database
 import RPi.GPIO as GPIO
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -13,7 +12,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
 
 # Time parameters
 _reset_time = 00
@@ -48,6 +46,7 @@ if gpio_support:
     GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
 
+
 def reset_all_parameters():
     global connect
     global food
@@ -77,6 +76,7 @@ def reset_all_parameters():
         food = True
     # End of reset_all_parameters()
 
+
 def start_feeding(count):
     if gpio_support:
         if debug:
@@ -90,9 +90,18 @@ def start_feeding(count):
     # End of start_feeding()
 
 
+def change_state_gpio(_gpio_number, state):
+    if state:
+        GPIO.setup(_gpio_number, GPIO.OUT)
+        GPIO.output(_gpio_number, GPIO.HIGH)
+    elif not state:
+        GPIO.output(_gpio_number, GPIO.LOW)
+        GPIO.setup(_gpio_number, GPIO.IN)
+    # End of change_state_gpio()
+
+
 logging.info("= Starting Aqua Control Center =")
 reset_all_parameters()
-
 
 while True:
     if lighting_enabled:
@@ -102,16 +111,17 @@ while True:
             if debug:
                 logging.info("Lighting - Disabled")
             if gpio_support:
-                GPIO.output(lighting_gpio, GPIO.LOW)
-                GPIO.setup(lighting_gpio, GPIO.IN)
+                # Выключаем GPIO
+                change_state_gpio(lighting_gpio, False)
+            lighting_timer = False
             light = False
         # Enable lighting
         elif not light and lighting_timer:
             if debug:
                 logging.info("Lighting - Enabled")
             if gpio_support:
-                GPIO.setup(lighting_gpio, GPIO.OUT)
-                GPIO.output(lighting_gpio, GPIO.HIGH)
+                # Включаем GPIO
+                change_state_gpio(lighting_gpio, True)
             light = True
     else:
         logging.info("Lighting is disabled in config")
@@ -122,16 +132,17 @@ while True:
             if debug:
                 logging.info("Oxygen - Disabled")
             if gpio_support:
-                GPIO.output(oxygen_gpio, GPIO.LOW)
-                GPIO.setup(oxygen_gpio, GPIO.IN)
+                # Выключаем GPIO
+                change_state_gpio(oxygen_gpio, False)
+            oxygen_timer = False
             oxygen = False
         # Enable oxygen
         elif not oxygen and oxygen_timer:
             if debug:
                 logging.info("Oxygen - Enabled")
             if gpio_support:
-                GPIO.setup(oxygen_gpio, GPIO.OUT)
-                GPIO.output(oxygen_gpio, GPIO.HIGH)
+                # Включаем GPIO
+                change_state_gpio(oxygen_gpio, True)
             oxygen = True
     else:
         logging.info("Oxygen is disabled in config")
