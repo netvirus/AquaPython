@@ -28,7 +28,7 @@ oxygen_stop_hours = 22
 oxygen_start_minutes = 0
 oxygen_gpio = 27
 feeding_enabled = True
-_feeding_start_hours = 12
+_feeding_start_hours = 9
 _feeding_stop_hours = 22
 _feeding_second_hour = 0
 _feeding_number_of = 2
@@ -44,6 +44,9 @@ feeding_first_state = False
 connect = Database()
 utils = AquaUtil()
 
+if gpio_support:
+    GPIO.cleanup()
+    GPIO.setmode(GPIO.BCM)
 
 def reset_all_parameters():
     global connect
@@ -77,7 +80,7 @@ def reset_all_parameters():
 def start_feeding(count):
     if gpio_support:
         if debug:
-            logging.info("Starting feeding #" + count)
+            logging.info("Starting feeding #" + str(count))
         GPIO.setup(feeding_gpio, GPIO.OUT)
         GPIO.output(feeding_gpio, GPIO.HIGH)
         time.sleep(5)
@@ -86,10 +89,6 @@ def start_feeding(count):
     connect.save_to_db()
     # End of start_feeding()
 
-
-if gpio_support:
-    GPIO.cleanup()
-    GPIO.setmode(GPIO.BCM)
 
 logging.info("= Starting Aqua Control Center =")
 reset_all_parameters()
@@ -146,7 +145,7 @@ while True:
                 elif utils.checkHour(_feeding_second_hour):
                     start_feeding(2)
                     # Выставляем флаг откормлено на сегодня
-                    feed = True
+                    food = True
         else:
             if utils.checkHour(_reset_time):
                 reset_all_parameters()
