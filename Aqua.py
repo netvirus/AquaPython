@@ -46,6 +46,7 @@ food = False
 light = False
 oxygen = False
 feeding_first_state = False
+reset_parameters = False
 # Get BD connection
 connect = Database()
 utils = AquaUtil()
@@ -116,6 +117,8 @@ while True:
             if debug:
                 logging.info("Lighting - Disabled")
             if gpio_support:
+                # Начался новый цикл и нам надо сбросить флаг для ночного сброса параметров
+                reset_parameters = False
                 # Выключаем GPIO
                 change_state_gpio(lighting_gpio, False)
             lighting_timer = False
@@ -163,7 +166,8 @@ while True:
                     # Выставляем флаг откормлено на сегодня
                     food = True
         else:
-            if utils.checkHour(_reset_time):
+            if utils.checkHour(_reset_time) and not reset_parameters:
+                reset_parameters = True
                 reset_all_parameters()
     else:
         logging.info("Feeding is disabled in config")
