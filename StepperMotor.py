@@ -27,7 +27,7 @@ class StepperMotor(object):
         GPIO.output(self.IN2, False)
         GPIO.output(self.IN3, False)
         GPIO.output(self.IN4, False)
-        __gpio = GPIO
+        self.__gpio = GPIO
     ## End of __init__
 
     def Step1(self):

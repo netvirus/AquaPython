@@ -51,10 +51,11 @@ reset_parameters = False
 connect = Database()
 utils = AquaUtil()
 motor = StepperMotor(in1_gpio, in2_gpio, in3_gpio, in4_gpio, stepper_delay)
+__gpio = GPIO
 
 if gpio_support:
-    GPIO.setmode(GPIO.BCM)
-    GPIO.cleanup()
+    __gpio.setmode(GPIO.BCM)
+    __gpio.cleanup()
 
 
 def reset_all_parameters():
@@ -97,13 +98,13 @@ def start_feeding(count):
 
 
 def change_state_gpio(_gpio_number, state):
-    GPIO.setmode(GPIO.BCM)
+    global __gpio
     if state:
-        GPIO.setup(_gpio_number, GPIO.OUT)
-        GPIO.output(_gpio_number, state)
+        __gpio.setup(_gpio_number, GPIO.OUT)
+        __gpio.output(_gpio_number, state)
     elif not state:
-        GPIO.output(_gpio_number, state)
-        GPIO.setup(_gpio_number, GPIO.IN)
+        __gpio.output(_gpio_number, state)
+        __gpio.setup(_gpio_number, GPIO.IN)
     # End of change_state_gpio()
 
 
