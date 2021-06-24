@@ -3,11 +3,12 @@ import RPi.GPIO as GPIO
 
 
 class StepperMotor(object):
-    IN1   = None
-    IN2   = None
-    IN3   = None
-    IN4   = None
-    delay = None
+    IN1    = None
+    IN2    = None
+    IN3    = None
+    IN4    = None
+    delay  = None
+    __gpio = None
 
     def __init__(self, in1, in2, in3, in4, step_delay):
         self.IN1 = in1
@@ -26,55 +27,56 @@ class StepperMotor(object):
         GPIO.output(self.IN2, False)
         GPIO.output(self.IN3, False)
         GPIO.output(self.IN4, False)
+        __gpio = GPIO
     ## End of __init__
 
     def Step1(self):
-        GPIO.output(self.IN4, True)
+        self.__gpio.output(self.IN4, True)
         sleep(self.delay)
-        GPIO.output(self.IN4, False)
+        self.__gpio.output(self.IN4, False)
 
     def Step2(self):
-        GPIO.output(self.IN4, True)
-        GPIO.output(self.IN3, True)
+        self.__gpio.output(self.IN4, True)
+        self.__gpio.output(self.IN3, True)
         sleep(self.delay)
-        GPIO.output(self.IN4, False)
-        GPIO.output(self.IN3, False)
+        self.__gpio.output(self.IN4, False)
+        self.__gpio.output(self.IN3, False)
 
     def Step3(self):
-        GPIO.output(self.IN3, True)
+        self.__gpio.output(self.IN3, True)
         sleep(self.delay)
-        GPIO.output(self.IN3, False)
+        self.__gpio.output(self.IN3, False)
 
     def Step4(self):
-        GPIO.output(self.IN2, True)
-        GPIO.output(self.IN3, True)
+        self.__gpio.output(self.IN2, True)
+        self.__gpio.output(self.IN3, True)
         sleep(self.delay)
-        GPIO.output(self.IN2, False)
-        GPIO.output(self.IN3, False)
+        self.__gpio.output(self.IN2, False)
+        self.__gpio.output(self.IN3, False)
 
     def Step5(self):
-        GPIO.output(self.IN2, True)
+        self.__gpio.output(self.IN2, True)
         sleep(self.delay)
-        GPIO.output(self.IN2, False)
+        self.__gpio.output(self.IN2, False)
 
     def Step6(self):
-        GPIO.output(self.IN1, True)
-        GPIO.output(self.IN2, True)
+        self.__gpio.output(self.IN1, True)
+        self.__gpio.output(self.IN2, True)
         sleep(self.delay)
-        GPIO.output(self.IN1, False)
-        GPIO.output(self.IN2, False)
+        self.__gpio.output(self.IN1, False)
+        self.__gpio.output(self.IN2, False)
 
     def Step7(self):
-        GPIO.output(self.IN1, True)
+        self.__gpio.output(self.IN1, True)
         sleep(self.delay)
-        GPIO.output(self.IN1, False)
+        self.__gpio.output(self.IN1, False)
 
     def Step8(self):
-        GPIO.output(self.IN4, True)
-        GPIO.output(self.IN1, True)
+        self.__gpio.output(self.IN4, True)
+        self.__gpio.output(self.IN1, True)
         sleep(self.delay)
-        GPIO.output(self.IN4, False)
-        GPIO.output(self.IN1, False)
+        self.__gpio.output(self.IN4, False)
+        self.__gpio.output(self.IN1, False)
 
     def start(self, rounds):
         for i in range(rounds):
@@ -86,4 +88,4 @@ class StepperMotor(object):
             self.Step6()
             self.Step7()
             self.Step8()
-        GPIO.cleanup()
+        self.__gpio.cleanup()

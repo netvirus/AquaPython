@@ -97,6 +97,7 @@ def start_feeding(count):
 
 
 def change_state_gpio(_gpio_number, state):
+    GPIO.setmode(GPIO.BCM)
     if state:
         GPIO.setup(_gpio_number, GPIO.OUT)
         GPIO.output(_gpio_number, state)
