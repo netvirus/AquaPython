@@ -17,69 +17,64 @@ class StepperMotor(object):
         self.delay = step_delay
 
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(IN1, GPIO.OUT)
-        GPIO.setup(IN2, GPIO.OUT)
-        GPIO.setup(IN3, GPIO.OUT)
-        GPIO.setup(IN4, GPIO.OUT)
+        GPIO.setup(self.IN1, GPIO.OUT)
+        GPIO.setup(self.IN2, GPIO.OUT)
+        GPIO.setup(self.IN3, GPIO.OUT)
+        GPIO.setup(self.IN4, GPIO.OUT)
 
-        GPIO.output(IN1, False)
-        GPIO.output(IN2, False)
-        GPIO.output(IN3, False)
-        GPIO.output(IN4, False)
+        GPIO.output(self.IN1, False)
+        GPIO.output(self.IN2, False)
+        GPIO.output(self.IN3, False)
+        GPIO.output(self.IN4, False)
     ## End of __init__
 
     def Step1(self):
-        global IN4
-        global time
-        GPIO.output(IN4, True)
-        sleep(time)
-        GPIO.output(IN4, False)
+        GPIO.output(self.IN4, True)
+        sleep(self.delay)
+        GPIO.output(self.IN4, False)
 
     def Step2(self):
-        global IN3
-        GPIO.output(IN4, True)
-        GPIO.output(IN3, True)
-        sleep(time)
-        GPIO.output(IN4, False)
-        GPIO.output(IN3, False)
+        GPIO.output(self.IN4, True)
+        GPIO.output(self.IN3, True)
+        sleep(self.delay)
+        GPIO.output(self.IN4, False)
+        GPIO.output(self.IN3, False)
 
     def Step3(self):
-        GPIO.output(IN3, True)
-        sleep(time)
-        GPIO.output(IN3, False)
+        GPIO.output(self.IN3, True)
+        sleep(self.delay)
+        GPIO.output(self.IN3, False)
 
     def Step4(self):
-        global IN2
-        GPIO.output(IN2, True)
-        GPIO.output(IN3, True)
-        sleep(time)
-        GPIO.output(IN2, False)
-        GPIO.output(IN3, False)
+        GPIO.output(self.IN2, True)
+        GPIO.output(self.IN3, True)
+        sleep(self.delay)
+        GPIO.output(self.IN2, False)
+        GPIO.output(self.IN3, False)
 
     def Step5(self):
-        GPIO.output(IN2, True)
-        sleep(time)
-        GPIO.output(IN2, False)
+        GPIO.output(self.IN2, True)
+        sleep(self.delay)
+        GPIO.output(self.IN2, False)
 
     def Step6(self):
-        global IN1
-        GPIO.output(IN1, True)
-        GPIO.output(IN2, True)
-        sleep(time)
-        GPIO.output(IN1, False)
-        GPIO.output(IN2, False)
+        GPIO.output(self.IN1, True)
+        GPIO.output(self.IN2, True)
+        sleep(self.delay)
+        GPIO.output(self.IN1, False)
+        GPIO.output(self.IN2, False)
 
     def Step7(self):
-        GPIO.output(IN1, True)
-        sleep(time)
-        GPIO.output(IN1, False)
+        GPIO.output(self.IN1, True)
+        sleep(self.delay)
+        GPIO.output(self.IN1, False)
 
     def Step8(self):
-        GPIO.output(IN4, True)
-        GPIO.output(IN1, True)
-        sleep(time)
-        GPIO.output(IN4, False)
-        GPIO.output(IN1, False)
+        GPIO.output(self.IN4, True)
+        GPIO.output(self.IN1, True)
+        sleep(self.delay)
+        GPIO.output(self.IN4, False)
+        GPIO.output(self.IN1, False)
 
     def start(self, rounds):
         for i in range(rounds):
