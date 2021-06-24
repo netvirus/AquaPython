@@ -1,5 +1,4 @@
 from time import sleep
-import RPi.GPIO as GPIO
 
 
 class StepperMotor(object):
@@ -10,24 +9,17 @@ class StepperMotor(object):
     delay  = None
     __gpio = None
 
-    def __init__(self, in1, in2, in3, in4, step_delay):
+    def __init__(self, gpio, in1, in2, in3, in4, step_delay):
         self.IN1 = in1
         self.IN2 = in2
         self.IN3 = in3
         self.IN4 = in4
         self.delay = step_delay
-
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.IN1, GPIO.OUT)
-        GPIO.setup(self.IN2, GPIO.OUT)
-        GPIO.setup(self.IN3, GPIO.OUT)
-        GPIO.setup(self.IN4, GPIO.OUT)
-
-        GPIO.output(self.IN1, False)
-        GPIO.output(self.IN2, False)
-        GPIO.output(self.IN3, False)
-        GPIO.output(self.IN4, False)
-        self.__gpio = GPIO
+        self.__gpio = gpio
+        self.__gpio.setup(self.IN1, self.__gpio.OUT)
+        self.__gpio.setup(self.IN2, self.__gpio.OUT)
+        self.__gpio.setup(self.IN3, self.__gpio.OUT)
+        self.__gpio.setup(self.IN4, self.__gpio.OUT)
     ## End of __init__
 
     def Step1(self):
@@ -88,4 +80,3 @@ class StepperMotor(object):
             self.Step6()
             self.Step7()
             self.Step8()
-        self.__gpio.cleanup()
