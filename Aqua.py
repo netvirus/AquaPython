@@ -15,7 +15,8 @@ logging.basicConfig(
 )
 
 # Time parameters
-_reset_time = 00
+_reset_time1 = 0
+_reset_time2 = 1
 lighting_enabled = True
 lighting_start_hours = 9
 lighting_stop_hours = 18
@@ -176,8 +177,10 @@ while True:
                     # Выставляем флаг откормлено на сегодня
                     food = True
         else:
-            if utils.checkHour(_reset_time) and not reset_parameters:
+            if utils.checkHour(_reset_time1) and not reset_parameters:
                 reset_parameters = True
                 reset_all_parameters()
+            elif utils.checkHour(_reset_time2) and reset_parameters:
+                reset_parameters = False
     else:
         logging.info("Feeding is disabled in config")
