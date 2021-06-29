@@ -182,5 +182,6 @@ while True:
                 reset_all_parameters()
             elif utils.checkHour(_reset_time2) and reset_parameters:
                 reset_parameters = False
+                food = False
     else:
         logging.info("Feeding is disabled in config")
