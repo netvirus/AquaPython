@@ -95,9 +95,9 @@ def reset_all_parameters():
     elif count == 2:
         # Откормили на сегодня
         food = True
-    logging.info("First feeding start time is: " + str(_feeding_start_hours))
+    logging.info("First feeding start time at: " + str(_feeding_start_hours))
     if _feeding_number_of > 1:
-        logging.info("Second feeding start time is: " + str(_feeding_second_hour))
+        logging.info("Second feeding start time at: " + str(_feeding_second_hour))
     # End of reset_all_parameters()
 
 
@@ -194,7 +194,7 @@ while True:
                 reset_parameters = False
                 food = False
                 if debug:
-                    logging.info("reset_parameters set to: False")
-                    logging.info("food set to: False")
+                    logging.debug("reset_parameters set to: False")
+                    logging.debug("food set to: False")
     else:
         logging.info("Feeding is disabled in config")
