@@ -97,7 +97,7 @@ def reset_all_parameters():
         food = True
     logging.info("First feeding start time is: " + str(_feeding_start_hours))
     if _feeding_number_of > 1:
-        logging.info("Second feeding start time is: " + str(_feeding_start_hours))
+        logging.info("Second feeding start time is: " + str(_feeding_second_hour))
     # End of reset_all_parameters()
 
 
