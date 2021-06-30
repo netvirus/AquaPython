@@ -41,6 +41,7 @@ in4_gpio = 8
 stepper_delay = 0.005
 steps = 1024
 # Flags
+log_enabled = True
 debug = True
 gpio_support = True
 food = False
@@ -75,7 +76,7 @@ def reset_all_parameters():
     global _feeding_second_hour
     global feeding_first_state
     global _feeding_number_of
-    if debug:
+    if log_enabled:
         logging.info("Configuring all parameters...")
     count = connect.select_from_db()
     # Если не кормили еще не разу
@@ -94,12 +95,15 @@ def reset_all_parameters():
     elif count == 2:
         # Откормили на сегодня
         food = True
+    logging.info("First feeding start time is: " + str(_feeding_start_hours))
+    if _feeding_number_of > 1:
+        logging.info("Second feeding start time is: " + str(_feeding_start_hours))
     # End of reset_all_parameters()
 
 
 def start_feeding(count):
     if gpio_support:
-        if debug:
+        if log_enabled:
             logging.info("Starting feeding #" + str(count))
         motor.start(steps)
     connect.save_to_db()
@@ -125,7 +129,7 @@ while True:
         lighting_timer = utils.checkTime(lighting_start_hours, lighting_stop_hours, lighting_start_minutes)
         # Disable lighting
         if light and not lighting_timer:
-            if debug:
+            if log_enabled:
                 logging.info("Lighting - Disabled")
             if gpio_support:
                 # Начался новый цикл и нам надо сбросить флаг для ночного сброса параметров
@@ -136,7 +140,7 @@ while True:
             light = False
         # Enable lighting
         elif not light and lighting_timer:
-            if debug:
+            if log_enabled:
                 logging.info("Lighting - Enabled")
             if gpio_support:
                 # Включаем GPIO
@@ -148,7 +152,7 @@ while True:
         oxygen_timer = utils.checkTime(oxygen_start_hours, oxygen_stop_hours, oxygen_start_minutes)
         # Disable oxygen
         if oxygen and not oxygen_timer:
-            if debug:
+            if log_enabled:
                 logging.info("Oxygen - Disabled")
             if gpio_support:
                 # Выключаем GPIO
@@ -157,7 +161,7 @@ while True:
             oxygen = False
         # Enable oxygen
         elif not oxygen and oxygen_timer:
-            if debug:
+            if log_enabled:
                 logging.info("Oxygen - Enabled")
             if gpio_support:
                 # Включаем GPIO
@@ -172,16 +176,25 @@ while True:
                     start_feeding(1)
                     # Выставляем флаг откормлено 1 раз
                     feeding_first_state = True
+                    if debug:
+                        logging.info("feeding_first_state set to: True")
                 elif utils.checkHour(_feeding_second_hour):
                     start_feeding(2)
                     # Выставляем флаг откормлено на сегодня
                     food = True
+                    if debug:
+                        logging.info("food set to: True")
         else:
             if utils.checkHour(_reset_time1) and not reset_parameters:
                 reset_parameters = True
+                if debug:
+                    logging.info("reset_parameters set to: True")
                 reset_all_parameters()
             elif utils.checkHour(_reset_time2) and reset_parameters:
                 reset_parameters = False
                 food = False
+                if debug:
+                    logging.info("reset_parameters set to: False")
+                    logging.info("food set to: False")
     else:
         logging.info("Feeding is disabled in config")
